@@ -277,10 +277,18 @@ tr[data-g].f-hide{display:none}
 .vz-con-d{font-size:13px;font-weight:600;color:#f8fafc;line-height:1.5}
 @media(max-width:900px){.vz-segs,.vz-pils,.vz-cons{grid-template-columns:1fr 1fr}.vz-eng{grid-template-columns:1fr}}
 @media(max-width:600px){.vz-segs,.vz-pils,.vz-cons{grid-template-columns:1fr}.vz-bar-row,.vz-cap-row{grid-template-columns:1fr}.vz-bar-v,.vz-cap-v{text-align:left}}
-.zm-tip{position:fixed;left:50%;top:70px;transform:translate(-50%,-6px);z-index:2147483600;background:#0c1628;border:1px solid #12a7cf;color:#e8eef8;font-size:14px;font-weight:700;padding:7px 14px;border-radius:999px;box-shadow:0 0 18px rgba(18,167,207,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
-.zm-tip.on{opacity:1;transform:translate(-50%,0)}
+/* menu bar: keep everything on one line on wide screens (title shortens instead of pushing buttons to a 2nd row) */
+@media(min-width:1441px){
+ .bar .in{max-width:1680px;flex-wrap:nowrap}
+ .bar .in>*{flex-shrink:0}
+ .bar .t{flex:0 1 auto;min-width:0;max-width:440px;margin-right:auto}
+ .bar input{width:150px}
+}
+.zm-grp{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.zm-val{min-width:46px;text-align:center;font-size:13px;font-weight:700;color:#cbd5e1;font-variant-numeric:tabular-nums;transition:color .2s,transform .2s}
+.zm-val.flash{color:#f6cf6a;transform:scale(1.12)}
 .bar button:disabled{opacity:.4;cursor:default}
-@media print{main{zoom:1!important}.zm-tip{display:none!important}}
+@media print{main{zoom:1!important}}
 /* ===== 3D hero (GMM Grammy Place) ===== */
 header.hero.hero3d{position:relative;padding:0;height:clamp(580px,88vh,880px);overflow:hidden;border-bottom:1px solid var(--line);
  background-color:#020617;background-image:radial-gradient(circle at 20% 0%,rgba(18,167,207,.22),transparent 55%),radial-gradient(circle at 90% 20%,rgba(61,123,255,.16),transparent 50%),radial-gradient(circle at 50% 95%,rgba(212,154,30,.08),transparent 50%)}
@@ -1127,7 +1135,7 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
   <input id="q" type="search">
   <span class="cnt" id="cnt"></span>
   <button id="prev" aria-label="previous">▲</button><button id="next" aria-label="next">▼</button>
-  <button id="fm">A−</button><button id="fp">A+</button>
+  <span class="zm-grp"><button id="fm">A−</button><span class="zm-val" id="zmv" aria-live="polite">100%</span><button id="fp">A+</button></span>
   <button id="pr"></button>
 </div></div>
 <span class="langsw langfloat" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="th">ไทย</button></span>
@@ -1301,14 +1309,14 @@ $('b-model').addEventListener('click',function(e){e.preventDefault();goModel();}
 
 /* ---- text size, print, progress, back to top ---- */
 /* text size: scales the whole report body (text, cards, charts, tables, 3D model) in 10% steps, 80%–150% */
-var zm=1, zmTip=null, zmTimer=0;
+var zm=1, zmTimer=0;
 function setZoom(z){
   zm=Math.round(Math.max(0.8,Math.min(1.5,z))*10)/10;
   var m=document.querySelector('main'); if(m) m.style.zoom=zm;
   $('fm').disabled=(zm<=0.8); $('fp').disabled=(zm>=1.5);
-  if(!zmTip){zmTip=document.createElement('div');zmTip.className='zm-tip';document.body.appendChild(zmTip);}
-  zmTip.textContent=(cur==='th'?'ขนาดตัวอักษร ':'Text size ')+Math.round(zm*100)+'%';
-  zmTip.classList.add('on'); clearTimeout(zmTimer); zmTimer=setTimeout(function(){zmTip.classList.remove('on');},1200);
+  var v=$('zmv'); v.textContent=Math.round(zm*100)+'%';
+  v.title=(cur==='th'?'ขนาดตัวอักษร ':'Text size ')+v.textContent;
+  v.classList.add('flash'); clearTimeout(zmTimer); zmTimer=setTimeout(function(){v.classList.remove('flash');},900);
 }
 function setFs(v){ setZoom(zm+(v>fs?0.1:-0.1)); }
 $('fp').onclick=function(){setFs(fs+1);}; $('fm').onclick=function(){setFs(fs-1);}; var printed=false;
