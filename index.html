@@ -337,6 +337,13 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
 .h3d-pills{position:absolute;right:20px;bottom:22px;left:var(--h3d-pl,360px);z-index:3;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
 .h3d-pills::-webkit-scrollbar{display:none}
 .h3d-pills>.h3d-pill:first-child{margin-left:auto}
+.h3d-zoom{position:absolute;right:20px;bottom:74px;z-index:3;display:flex;flex-direction:column;gap:6px}
+.h3d-zb{appearance:none;width:38px;height:38px;border-radius:10px;border:1px solid rgba(111,214,238,.35);background:rgba(2,6,23,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#e2e8f0;font:inherit;font-size:20px;font-weight:600;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 16px rgba(0,0,0,.35);transition:all .2s}
+.h3d-zb:hover{border-color:#6fd6ee;color:#fff;background:rgba(15,23,42,.9)}
+.h3d-zb:disabled{opacity:.35;cursor:default}
+.hero3d.no3d .h3d-zoom{display:none}
+@media (max-width:760px){.h3d-zoom{right:14px;bottom:auto;top:calc(var(--h3d-bt,360px) + 8px)}.h3d-zb{width:34px;height:34px;font-size:18px}}
+@media print{.h3d-zoom{display:none!important}}
 @media (min-width:761px) and (max-width:1240px){header.hero3d .h3d-pills{gap:6px;left:20px}header.hero3d .h3d-legend{bottom:64px}.h3d-pill{font-size:11px;padding:6px 10px;gap:5px;letter-spacing:.01em}}
 .h3d-pill{appearance:none;border:1px solid rgba(111,214,238,.28);background:rgba(2,6,23,.68);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:rgba(226,232,240,.88);font:inherit;font-size:12px;font-weight:500;letter-spacing:.03em;line-height:1.2;padding:7px 13px;border-radius:999px;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.35);white-space:nowrap}
 .h3d-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(111,214,238,.55);transition:all .25s}
@@ -413,6 +420,10 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
     <button type="button" class="h3d-pill" data-view="helipad"></button>
     <button type="button" class="h3d-pill active" data-view="orbit"></button>
   </div>
+  <div class="h3d-zoom" id="h3d-zoom" role="group">
+    <button type="button" class="h3d-zb" id="h3d-zin">+</button>
+    <button type="button" class="h3d-zb" id="h3d-zout">−</button>
+  </div>
 </header>
 <script>
 (function () {
@@ -423,7 +434,7 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
   /* ---------- bilingual labels (follow the report's language switch) ---------- */
   var T = {
     en: {
-      eyebrow: 'Strategy Report · 2026', read: 'Read the report ↓', hint: 'Drag to rotate · pinch or Ctrl + scroll to zoom', hintTouch: 'Swipe sideways to rotate · pinch to zoom',
+      eyebrow: 'Strategy Report · 2026', read: 'Read the report ↓', hint: 'Drag to rotate · + / − or Ctrl + scroll to zoom', hintTouch: 'Swipe sideways to rotate · pinch or + / − to zoom', zin: 'Zoom in', zout: 'Zoom out',
       legend: 'Model layers', layersAria: 'Model layers', viewsAria: '3D camera views',
       layers: {
         tower: 'Main Tower (Floors 1–43, Above Ground)',
@@ -439,7 +450,7 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
       }
     },
     th: {
-      eyebrow: 'รายงานกลยุทธ์ · 2026', read: 'อ่านรายงาน ↓', hint: 'ลากเพื่อหมุน · ถ่างนิ้วหรือกด Ctrl + เลื่อนเพื่อซูม', hintTouch: 'ปัดซ้ายขวาเพื่อหมุน · ถ่างนิ้วเพื่อซูม',
+      eyebrow: 'รายงานกลยุทธ์ · 2026', read: 'อ่านรายงาน ↓', hint: 'ลากเพื่อหมุน · ใช้ปุ่ม + / − หรือ Ctrl + เลื่อน เพื่อซูม', hintTouch: 'ปัดซ้ายขวาเพื่อหมุน · ถ่างนิ้วหรือใช้ปุ่ม + / − เพื่อซูม', zin: 'ซูมเข้า', zout: 'ซูมออก',
       legend: 'ชั้นของแบบจำลอง', layersAria: 'ชั้นของแบบจำลอง', viewsAria: 'มุมกล้อง 3 มิติ',
       layers: {
         tower: 'อาคารหลัก (ชั้น 1–43 เหนือพื้นดิน)',
@@ -472,6 +483,8 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
     document.getElementById('h3d-read').textContent = t.read;
     document.getElementById('h3d-hint').textContent = (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) ? t.hintTouch : t.hint;
     document.getElementById('h3d-legend-head').textContent = t.legend;
+    document.getElementById('h3d-zin').title = t.zin; document.getElementById('h3d-zin').setAttribute('aria-label', t.zin);
+    document.getElementById('h3d-zout').title = t.zout; document.getElementById('h3d-zout').setAttribute('aria-label', t.zout);
     document.getElementById('h3d-legend').setAttribute('aria-label', t.layersAria);
     document.getElementById('h3d-pills').setAttribute('aria-label', t.viewsAria);
     hero.querySelectorAll('.h3d-li').forEach(function (b) { b.querySelector('.h3d-lt').textContent = t.layers[b.dataset.layer]; });
@@ -519,6 +532,7 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
     rH = hero.getBoundingClientRect(); lg = legend.getBoundingClientRect();
     if (window.matchMedia('(min-width:1241px)').matches) hero.style.setProperty('--h3d-pl', Math.ceil(lg.right - rH.left + 16) + 'px'); else hero.style.removeProperty('--h3d-pl');
     window.__h3dBand = phone ? { top: copy.bottom - rH.top, bottom: lg.top - rH.top } : null;
+    if (phone) hero.style.setProperty('--h3d-bt', Math.round(copy.bottom - rH.top) + 'px');
     if (window.__h3dFrame) window.__h3dFrame();
   }
   legendHead.addEventListener('click', function () {
@@ -1088,6 +1102,7 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
           targetTheta = currentTheta + diff;
         }
         targetPhi = p.phi; targetDistance = p.distance; targetLookAtY = p.lookAtY;
+        if (window.__h3dZoomState) window.__h3dZoomState();
         wake();
       });
     });
@@ -1118,8 +1133,15 @@ header.hero.hero3d p{font-size:16px;line-height:1.65;color:#cbd5e1;max-width:540
     host.addEventListener('wheel', function (e) {
       if (!(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
-      targetDistance = Math.max(17, Math.min(54, targetDistance + e.deltaY * 0.05));
+      targetDistance = Math.max(17, Math.min(54, targetDistance + e.deltaY * 0.05)); if (window.__h3dZoomState) window.__h3dZoomState();
     }, { passive: false });
+    // + / − buttons
+    var zin = document.getElementById('h3d-zin'), zout = document.getElementById('h3d-zout');
+    function zoomState() { zin.disabled = targetDistance <= 17.5; zout.disabled = targetDistance >= 53.5; }
+    function zoomBy(d) { targetDistance = Math.max(17, Math.min(54, targetDistance + d)); zoomState(); wake(); }
+    zin.addEventListener('click', function (e) { e.stopPropagation(); zoomBy(-5); });
+    zout.addEventListener('click', function (e) { e.stopPropagation(); zoomBy(5); });
+    window.__h3dZoomState = zoomState;
     // Two-finger pinch on touch screens
     var pinch0 = 0, pinchD0 = 0;
     host.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { isDragging = false; pinch0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pinchD0 = targetDistance; } }, { passive: true });
