@@ -1466,13 +1466,23 @@ window.addEventListener('beforeprint',function(){printed=true;loadFrames(ed());f
 window.addEventListener('afterprint',function(){fitFrames(false);});
 function printTip(){
   var old=document.querySelector('.prt-toast'); if(old) old.remove();
-  var here=/netlify\.app$/.test(location.hostname)?location.origin+location.pathname:'https://gmm-strategy-01.netlify.app/';
+  var here=printHome();
   var en=cur!=='th', t=document.createElement('div'); t.className='prt-toast'; t.setAttribute('role','status');
   t.innerHTML='<span style="flex:1;min-width:200px">'+(en?'Printing is blocked inside this embedded view. Open the report in its own tab to print or save as PDF.':'หน้าที่ฝังไว้นี้ไม่อนุญาตให้พิมพ์ กรุณาเปิดรายงานในแท็บใหม่เพื่อพิมพ์หรือบันทึกเป็น PDF')+'</span><a target="_blank" rel="noopener" href="'+here+(en?'#print':'#printth')+'">'+(en?'Open and print':'เปิดและพิมพ์')+'</a><button type="button" aria-label="Close">✕</button>';
   t.querySelector('button').onclick=function(){t.remove();}; t.querySelector('a').onclick=function(){setTimeout(function(){t.remove();},300);};
   document.body.appendChild(t);
 }
-$('pr').onclick=function(){ loadFrames(ed()); printed=false; try{window.print();}catch(x){} setTimeout(function(){ if(!printed) printTip(); },350); };
+function printHome(){ return /(github\.io|netlify\.app)$/.test(location.hostname)?location.origin+location.pathname:'https://areewanbiz-lang.github.io/gmm-grammy-place-report/'; }
+function embedded(){ try{ return window.self!==window.top; }catch(x){ return true; } }
+$('pr').onclick=function(){
+  // Inside Google Sites (or any embed) the browser blocks printing, so open the report in its own tab and print there
+  if(embedded()){
+    var w=null; try{ w=window.open(printHome()+(cur==='th'?'#printth':'#print'),'_blank'); if(w){ try{ w.opener=null; }catch(y){} } }catch(x){}
+    if(!w) printTip();
+    return;
+  }
+  loadFrames(ed()); printed=false; try{window.print();}catch(x){} setTimeout(function(){ if(!printed) printTip(); },350);
+};
 var bar=document.createElement('div');bar.className='gmm-progress';document.body.appendChild(bar);
 var topBtn=document.createElement('button');topBtn.className='gmm-top';topBtn.type='button';document.body.appendChild(topBtn);
 topBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'});};
